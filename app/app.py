@@ -8,7 +8,7 @@ st.title('Health Data App')
 user = st.selectbox('Select A Profile',
                    ['Wayne Chim'])
 
-df = pd.read_csv('main.csv')
+df = pd.read_csv('app/main.csv')
 #Processing data
 df.timestamp = pd.to_datetime(df.timestamp, infer_datetime_format=True)
 df.date = pd.to_datetime(df.date, infer_datetime_format=True)
