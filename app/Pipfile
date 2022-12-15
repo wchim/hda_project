@@ -6,6 +6,10 @@ name = "pypi"
 [packages]
 pandas = "*"
 "plotly.express" = "*"
+gspread = "*"
+gspread-dataframe = "*"
+datetime = "*"
+streamlit = "*"
 
 [dev-packages]
 
