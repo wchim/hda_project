@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import json
 from datetime import datetime
 from google.oauth2 import service_account
 import gspread
@@ -28,6 +29,10 @@ def load_gsheet():
     #df['date'] = [i.date() for i in df.timestamp]
     #df['time_of_day'] = [i.strftime('%p') for i in df.timestamp]
     return df
+
+def load_profiles():
+    profiles = pd.read_csv('profiles.csv')
+    return profiles
 
 def submit_data(data_entry, df):
     updated_df = df.append(data_entry, ignore_index=True)
