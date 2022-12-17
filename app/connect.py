@@ -31,8 +31,8 @@ def load_gsheet():
     return df
 
 def load_profiles():
-    #profiles = pd.read_csv('app/profiles.csv')
-    profiles = pd.read_csv('profiles.csv')
+    profiles = pd.read_csv('app/profiles.csv')
+    #profiles = pd.read_csv('profiles.csv')
     return profiles
 
 def submit_data(data_entry, df):
