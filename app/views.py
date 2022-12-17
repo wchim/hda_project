@@ -28,13 +28,13 @@ def load_page():
         last_update = str(new_df['date'].iloc[-1].date())
         metr1.metric('Current Bodyweight', recent_wt)
         metr1.caption(f'Last updated on {last_update}')
-        
-        week_trend = utils.find_n_day_trend(7, new_df['wt_lb'])
-        metr2.metric('7-Day Trend', week_trend)
 
         bodyweight_goal = profiles[profiles.user == user].bodyweight_goal.iloc[0]
         progress = round(recent_wt - bodyweight_goal, 2)
-        metr3.metric('Bodyweight Goal', bodyweight_goal, progress, 'inverse')
+        metr2.metric('Bodyweight Goal', bodyweight_goal, progress, 'inverse')
+        
+        week_trend = utils.find_n_day_trend(7, new_df['wt_lb'])
+        metr3.metric('7-Day Trend', week_trend)
 
     with graph_tab:
         #Dummy slider
@@ -50,6 +50,7 @@ def load_page():
                             ['Pounds','Kilograms'])
         
             form_submit = st.form_submit_button('Submit Data')
+            button_msg = st.empty()
             if form_submit:
                 if body_wt > 0:
                     wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
@@ -66,9 +67,13 @@ def load_page():
                                   'date': date,
                                   'time_of_day': time_of_day}
                     #st.json(data_entry)
-                    connect.submit_data(data_entry, df)
-                else:
-                    err_msg = st.empty()
-                    err_msg.error('Bodyweight must be at least 0')
+                    #connect.submit_data(data_entry, df)
+                    st.json(data_entry)
+                    button_msg.success('Data successfully submitted')
                     time.sleep(3)
-                    err_msg.empty()
+                    button_msg.empty()
+                else:
+                    button_msg = st.empty()
+                    button_msg.error('Bodyweight must be at least 0')
+                    time.sleep(3)
+                    button_msg.empty()
