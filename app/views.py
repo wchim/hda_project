@@ -44,8 +44,8 @@ def load_page():
     with form_tab:
         with st.form('body_wt_form', clear_on_submit=True):
             body_wt = st.number_input(label='Body Weight',
-                                    min_value=0,
-                                    step=1)
+                                      min_value=0.0,
+                                      step=0.1)
             unit = st.radio('Unit of Measure',
                             ['Pounds','Kilograms'])
         
@@ -65,6 +65,7 @@ def load_page():
                                   'wt_kg': wt_kg,
                                   'date': date,
                                   'time_of_day': time_of_day}
+                    #st.json(data_entry)
                     connect.submit_data(data_entry, df)
                 else:
                     err_msg = st.empty()
