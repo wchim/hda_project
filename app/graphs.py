@@ -2,12 +2,8 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-import connect
-
-profiles = connect.load_profiles()
-
-def weight_journey(df, user):
-        bodyweight_goal = profiles[profiles.user == user].bodyweight_goal.iloc[0]
+def weight_journey(df, user, bodyweight_goal):
+        
         fig = px.scatter(data_frame=df,
                         x='date',
                         y='wt_lb',

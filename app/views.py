@@ -1,26 +1,40 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 from datetime import datetime
 from datetime import timedelta
-import time
 
 import connect
 import graphs
 import utils
 
-
 def load_page():
-
     df = connect.load_gsheet()
     profiles = connect.load_profiles()
     st.title('Health Data App')
     # Select a user through a dropdown
     user = st.selectbox('Select A Profile',
                         ['Wayne Chim','Joyce Chan'])
+    fitness_opt = profiles[profiles.user == user].fitness_opt.iloc[0]
+    bodyweight_goal = profiles[profiles.user == user].bodyweight_goal.iloc[0]
+
     new_df = df[df.user == user]
 
     # Page tabs
-    data_tab, graph_tab, form_tab = st.tabs(['Profile Summary','Weight Journey','Data Entry'])
+    if ~fitness_opt:
+        data_tab, graph_tab, form_tab = st.tabs(['Profile Summary','Weight Journey','Data Entry'])
+    else:
+        data_tab, graph_tab, form_tab, exercise_tab= st.tabs(['Profile Summary','Weight Journey','Data Entry','General Exercise Breakdown'])
+
+        with exercise_tab:
+            lifted_wt = st.number_input(label='Weight Lifted',
+                                        min_value=0,
+                                        step=1)
+            reps = st.number_input(label='Set Repetitions',
+                                   min_value=0,
+                                   step=1)
+            utils.get_breakdown(lifted_wt, reps)
+    
     with data_tab:
         metr1, metr2, metr3 = st.columns(3)
         # First metric: Most Recent Bodyweight
@@ -29,7 +43,6 @@ def load_page():
         metr1.metric('Current Bodyweight', recent_wt)
         metr1.caption(f'Last updated on {last_update}')
 
-        bodyweight_goal = profiles[profiles.user == user].bodyweight_goal.iloc[0]
         progress = round(recent_wt - bodyweight_goal, 2)
         metr2.metric('Bodyweight Goal', bodyweight_goal, progress, 'inverse')
         
@@ -39,11 +52,11 @@ def load_page():
     with graph_tab:
         #Dummy slider
         st.select_slider('Timeline Range', df.date, (df.date.min(), df.date.max()))
-        graphs.weight_journey(new_df, user)
+        graphs.weight_journey(new_df, user, bodyweight_goal)
 
     with form_tab:
         with st.form('body_wt_form', clear_on_submit=True):
-            body_wt = st.number_input(label='Body Weight',
+            body_wt = st.number_input(label='Bodyweight',
                                       min_value=0.0,
                                       step=0.1)
             unit = st.radio('Unit of Measure',
@@ -66,14 +79,11 @@ def load_page():
                                   'wt_kg': wt_kg,
                                   'date': date,
                                   'time_of_day': time_of_day}
-                    #st.json(data_entry)
-                    #connect.submit_data(data_entry, df)
+                    connect.submit_data(data_entry, df)
                     st.json(data_entry)
                     button_msg.success('Data successfully submitted')
-                    time.sleep(3)
-                    button_msg.empty()
+                    utils.display_fade(button_msg)
                 else:
                     button_msg = st.empty()
                     button_msg.error('Bodyweight must be at least 0')
-                    time.sleep(3)
-                    button_msg.empty()
+                    utils.display_fade(button_msg)

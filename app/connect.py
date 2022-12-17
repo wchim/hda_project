@@ -21,7 +21,8 @@ sheet = workbook.worksheet(worksheet_name)
 
 def load_gsheet():
     values = sheet.get_all_values()
-    df = pd.DataFrame(values[1:], columns=values[0])
+    data_load = pd.DataFrame(values[1:], columns=values[0])
+    df = data_load.copy()
     df.timestamp = pd.to_datetime(df.timestamp, infer_datetime_format=True)
     df.wt_lb = df.wt_lb.astype(float)
     df.wt_kg = df.wt_kg.astype(float)
