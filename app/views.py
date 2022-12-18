@@ -9,6 +9,7 @@ import graphs
 import utils
 
 def load_page():
+    st.set_page_config(layout='centered')
     df = connect.load_gsheet()
     profiles = connect.load_profiles()
     st.title('Health Data App')
@@ -27,10 +28,11 @@ def load_page():
         data_tab, graph_tab, form_tab, exercise_tab= st.tabs(['Profile Summary','Weight Journey','Data Entry','General Exercise Breakdown'])
 
         with exercise_tab:
-            lifted_wt = st.number_input(label='Weight Lifted',
+            col1, col2 = st.columns(2)
+            lifted_wt = col1.number_input(label='Weight Lifted',
                                         min_value=0,
                                         step=1)
-            reps = st.number_input(label='Set Repetitions',
+            reps = col2.number_input(label='Set Repetitions',
                                    min_value=0,
                                    step=1)
             utils.get_breakdown(lifted_wt, reps)
