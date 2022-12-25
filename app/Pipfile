@@ -10,6 +10,7 @@ gspread = "*"
 gspread-dataframe = "*"
 datetime = "*"
 streamlit = "*"
+pymongo = "*"
 
 [dev-packages]
 

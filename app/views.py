@@ -8,6 +8,12 @@ import connect
 import graphs
 import utils
 
+def load_page_test():
+    #items = connect.get_data()
+    connect.init_connection()
+    #connect.get_data()
+    #st.write(items)
+
 def load_page():
     df = connect.load_gsheet()
     profiles = connect.load_profiles()
