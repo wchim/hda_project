@@ -17,10 +17,6 @@ def find_n_day_trend(n, body_wts):
     n_day_trend = round(n_day_trend, 3)
     return n_day_trend
 
-def display_fade(feat):
-    time.sleep(3)
-    feat.empty()
-
 '''
 Backend functions for fitness portion of the app
 '''

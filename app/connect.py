@@ -1,65 +1,32 @@
 import streamlit as st
 import pandas as pd
-import json
-from datetime import datetime
 import pymongo
-from google.oauth2 import service_account
-import gspread
-import gspread_dataframe as gd
+from pymongo.server_api import ServerApi
 
 # initialize mongodb connection
-#@st.experimental_singleton
+# connection_url = "mongodb+srv://wchim:aUkvGgAarVb8Gv3P@hda-cluster.qtfcgsu.mongodb.net/bodyweight"
+@st.experimental_singleton
 def init_connection():
     MONGO_USER = st.secrets['mongo'].username
-    st.write(MONGO_USER)
-    #uri = "mongodb://{}:{}@{}:{}/{}?authSource=admin".format(MONGO_USER, MONGO_PASS, MONGO_HOST, MONGO_PORT, MONGO_DB)
-    return pymongo.MongoClient(**st.secrets['mongo'])
+    MONGO_AUTH = st.secrets['mongo'].password
+    MONGO_CLUSTER = st.secrets['mongo'].cluster
+    #MONGO_DB = st.secrets['mongo'].database
+    MONGO_URL = f'mongodb+srv://{MONGO_USER}:{MONGO_AUTH}@{MONGO_CLUSTER}.qtfcgsu.mongodb.net/'
     
+    client = pymongo.MongoClient(MONGO_URL,
+                                 server_api=ServerApi('1'))
+    db = client.pod_health
+    return db
 
-client = init_connection()
+db = init_connection()
 
-#@st.experimental_memo(ttl=600)
-def get_data():
-    db = client['sample_mflix']
-    col = db.comments
-    cursor = col.find()
-    for doc in cursor:
-        st.write(doc)
-    client.close()
-    #items = db.comments.find()
-    #items = list(items)
-    #return items    
+# unload all data from mongodb for user view and analytics
+@st.experimental_memo(ttl=600)
+def unload_data():
+    bodyweight = pd.DataFrame(list(db.bodyweight.find()))
+    profile = pd.DataFrame(list(db.profile.find()))
+    return bodyweight, profile
 
-'''# set up gsheet connect
-scope = ['https://spreadsheets.google.com/feeds',
-        'https://www.googleapis.com/auth/drive']
-google_key_file = 'hda-gsheet-connect-0e3f2b4e1012.josn'
-credentials = service_account.Credentials.from_service_account_info(st.secrets['gcp_service_account'],
-                                                                    scopes=scope)
-g_auth = gspread.authorize(credentials)
-
-spreadsheet_key = '1tuqOdo_xjfbIvZxhxAHfJTVrZatpu8XY-At3LfodWFc'
-worksheet_name = 'bodyweight'
-workbook = g_auth.open_by_key(spreadsheet_key)
-sheet = workbook.worksheet(worksheet_name)
-
-def load_gsheet():
-    values = sheet.get_all_values()
-    data_load = pd.DataFrame(values[1:], columns=values[0])
-    df = data_load.copy()
-    df.timestamp = pd.to_datetime(df.timestamp, infer_datetime_format=True)
-    df.wt_lb = df.wt_lb.astype(float)
-    df.wt_kg = df.wt_kg.astype(float)
-    df.date = pd.to_datetime(df.date, infer_datetime_format=True)
-    #df['date'] = [i.date() for i in df.timestamp]
-    #df['time_of_day'] = [i.strftime('%p') for i in df.timestamp]
-    return df'''
-
-def load_profiles():
-    #profiles = pd.read_csv('app/profiles.csv')
-    profiles = pd.read_csv('profiles.csv')
-    return profiles
-
-def submit_data(data_entry, df):
-    updated_df = df.append(data_entry, ignore_index=True)
-    gd.set_with_dataframe(sheet, updated_df)
+# writes new record to mongodb
+def submit_data(data_entry, collection):
+    db[collection].insert_one(data_entry)
