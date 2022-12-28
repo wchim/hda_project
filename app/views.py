@@ -58,38 +58,38 @@ def build_userview():
             new_tab, form_tab = st.tabs(['Welcome','Data Entry'])
             with new_tab:
                 st.subheader("Looks like you're new around here, submit your first bodyweight entry to get started!")
-        with form_tab:
-            with st.form('body_wt_form', clear_on_submit=True):
-                body_wt = st.number_input(label='Bodyweight',
-                                        min_value=0.0,
-                                        step=0.1)
-                unit = st.radio('Unit of Measure',
-                                ['Pounds','Kilograms'])
-            
-                form_submit = st.form_submit_button('Submit Data')
+    with form_tab:
+        with st.form('body_wt_form', clear_on_submit=True):
+            body_wt = st.number_input(label='Bodyweight',
+                                    min_value=0.0,
+                                    step=0.1)
+            unit = st.radio('Unit of Measure',
+                            ['Pounds','Kilograms'])
+        
+            form_submit = st.form_submit_button('Submit Data')
 
-                button_msg = st.empty()
+            button_msg = st.empty()
 
-                if form_submit:
-                    if body_wt > 0:
-                        wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
-                        current_time = datetime.now() - timedelta(hours=4)
-                        timestamp = current_time
-                        date = str(current_time.date())
-                        time_of_day = current_time.strftime('%p')
-                        
-                        data_entry = {'timestamp': timestamp,
-                                    'user_id': user_id,
-                                    'wt_lb': wt_lb,
-                                    'wt_kg': wt_kg,
-                                    'date': date,
-                                    'time_of_day': time_of_day}
-                        connect.submit_data(data_entry, 'bodyweight')
-                        st.json(data_entry)
-                        button_msg.success('Data successfully submitted')
-                    else:
-                        button_msg = st.empty()
-                        button_msg.error('Bodyweight must be at least 0')
+            if form_submit:
+                if body_wt > 0:
+                    wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
+                    current_time = datetime.now() - timedelta(hours=4)
+                    timestamp = current_time
+                    date = str(current_time.date())
+                    time_of_day = current_time.strftime('%p')
+                    
+                    data_entry = {'timestamp': timestamp,
+                                'user_id': user_id,
+                                'wt_lb': wt_lb,
+                                'wt_kg': wt_kg,
+                                'date': date,
+                                'time_of_day': time_of_day}
+                    connect.submit_data(data_entry, 'bodyweight')
+                    st.json(data_entry)
+                    button_msg.success('Data successfully submitted')
+                else:
+                    button_msg = st.empty()
+                    button_msg.error('Bodyweight must be at least 0')
     
     if st.button('Refresh View'):
         st.experimental_memo.clear()
