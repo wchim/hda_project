@@ -47,8 +47,6 @@ def build_userview():
                 metr3.metric('7-Day Trend', week_trend)
 
                 st.table(user_df)
-                if st.button('Reload Data'):
-                    st.experimental_memo.clear()
 
             with graph_tab:
             # dummy slider
@@ -90,6 +88,9 @@ def build_userview():
                 else:
                     button_msg = st.empty()
                     button_msg.error('Bodyweight must be at least 0')
+    
+    if st.button('Reload Data'):
+        st.experimental_memo.clear()
     ''' if ~fitness_opt:
         data_tab, graph_tab, form_tab = st.tabs(['Profile Summary','Weight Journey','Data Entry'])
     else:
