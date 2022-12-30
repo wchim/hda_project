@@ -15,7 +15,9 @@ def build_userview():
     st.title('Health Data App')
     # select a user through a dropdown
     user = st.selectbox('Profile',
-                        ['Wayne Chim','Joyce Chan'])
+                        ['Wayne Chim',
+                         'Joyce Chan',
+                         'Vincent Lee'])
                         
     bodyweight, profile = connect.unload_data()
 
