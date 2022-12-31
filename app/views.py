@@ -17,7 +17,10 @@ def build_userview():
     user = st.selectbox('Profile',
                         ['Wayne Chim',
                          'Joyce Chan',
-                         'Vincent Lee'])
+                         'Vincent Lee',
+                         'Suk Chim',
+                         'Hing Chim',
+                         'Ernest Chim'])
                         
     bodyweight, profile = connect.unload_data()
 
