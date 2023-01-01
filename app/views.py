@@ -78,7 +78,7 @@ def build_userview():
             if form_submit:
                 if body_wt > 0:
                     wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
-                    current_time = datetime.now() - timedelta(hours=4)
+                    current_time = datetime.now() - timedelta(hours=5)
                     timestamp = current_time
                     date = str(current_time.date())
                     time_of_day = current_time.strftime('%p')
