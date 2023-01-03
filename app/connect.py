@@ -24,6 +24,7 @@ db = init_connection()
 @st.experimental_memo(ttl=600)
 def unload_data():
     bodyweight = pd.DataFrame(list(db.bodyweight.find()))
+    #bodyweight = pd.DataFrame(list(db.test.find()))
     profile = pd.DataFrame(list(db.profile.find()))
     return bodyweight, profile
 
