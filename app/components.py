@@ -69,12 +69,8 @@ def print_profile(tab, user):
 # print data entry form
 def print_form(tab, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
-        current_date = str(datetime.now().date())
-        user_temp = bodyweight[(bodyweight.user_id == user_id) & (bodyweight.date == current_date)]
 
-        am_count = (len(user_temp[user_temp.time_of_day == 'AM']))
-        pm_count = (len(user_temp[user_temp.time_of_day == 'PM']))
-
+        
         with tab:
                 with st.form('bwt_form', clear_on_submit=True):
                         # input bodyweight
@@ -94,11 +90,17 @@ def print_form(tab, user):
                                 if body_wt > 0:  
                                         current_time = datetime.now() - timedelta(hours=5)
                                         timestamp = current_time
+                                        current_date = str(current_time.date())
                                         time_of_day = current_time.strftime('%p')
+
+                                        user_temp = bodyweight[(bodyweight.user_id == user_id) & (bodyweight.date == current_date)]
+
+                                        am_count = (len(user_temp[user_temp.time_of_day == 'AM']))
+                                        pm_count = (len(user_temp[user_temp.time_of_day == 'PM']))
 
                                         if (time_of_day == 'AM' and am_count == 1) or (time_of_day == 'PM' and pm_count == 1):
                                                 form_submit_msg.error('You have already submitted an entry for the time of day, please try again later')
-                                        else:        
+                                        else:     
                                                 if len(user_temp) > 0:
                                                         recent_bwt = user_temp.wt_lb.iloc[0]
                                                         bwt_lower = 0.8*recent_bwt
