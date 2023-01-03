@@ -69,7 +69,6 @@ def print_profile(tab, user):
 # print data entry form
 def print_form(tab, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
-
         
         with tab:
                 with st.form('bwt_form', clear_on_submit=True):
@@ -109,6 +108,18 @@ def print_form(tab, user):
                                                         if body_wt < bwt_lower or body_wt > bwt_upper:
                                                                 form_submit_msg.error('Bodyweight is beyond reasonable bounds')
 
+                                                        else:
+                                                                wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
+                                                                date = current_date
+                                                                bwt_entry = {'timestamp': timestamp,
+                                                                        'user_id': user_id,
+                                                                        'wt_lb': wt_lb,
+                                                                        'wt_kg': wt_kg,
+                                                                        'date': date,
+                                                                        'time_of_day': time_of_day}
+                                                                connect.submit_data(bwt_entry,'bodyweight')
+                                                                st.json(bwt_entry)
+                                                                form_submit_msg.success('Data Submitted')
                                                 else:
                                                         wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
                                                         date = current_date
