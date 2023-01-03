@@ -74,10 +74,6 @@ def print_form(tab, user):
 
         am_count = (len(user_temp[user_temp.time_of_day == 'AM']))
         pm_count = (len(user_temp[user_temp.time_of_day == 'PM']))
-        st.write(am_count)
-        st.write(pm_count)
-        #st.write(recent_bwt, bwt_lower, bwt_upper)
-        st.write(current_date)
 
         with tab:
                 with st.form('bwt_form', clear_on_submit=True):
@@ -120,7 +116,7 @@ def print_form(tab, user):
                                                                 'wt_kg': wt_kg,
                                                                 'date': date,
                                                                 'time_of_day': time_of_day}
-                                                        #connect.submit_data(bwt_entry,'bodyweight')
+                                                        connect.submit_data(bwt_entry,'bodyweight')
                                                         st.json(bwt_entry)
                                                         form_submit_msg.success('Data Submitted')
                                 else:
