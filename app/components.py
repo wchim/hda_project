@@ -88,49 +88,62 @@ def print_form(tab, user):
                         if form_submit_btn:
                                 if body_wt <= 0:
                                         form_submit_msg.error('Bodyweight cannot be 0')
-                                else:
-                                        current_time = datetime.now() - timedelta(hours=5)
-                                        timestamp = current_time
-                                        current_date = str(current_time.date())
-                                        time_of_day = current_time.strftime('%p')
+                                        return
 
-                                        user_temp = bodyweight[bodyweight.user_id == user_id]
-                                        data_exists = False
+                                current_time = datetime.now() - timedelta(hours=5)
+                                #current_time = datetime.now()
+                                timestamp = current_time
+                                current_date = str(current_time.date())
+                                time_of_day = current_time.strftime('%p')
 
-                                        if len(user_temp) > 0:
-                                                data_exists = True
-                                                recent_bwt = user_temp.wt_lb.iloc[0]
-                                                recent_entries = user_temp[user_temp.date == current_date]
-                                                am_count = (len(recent_entries[recent_entries.time_of_day == 'AM']))
-                                                pm_count = (len(recent_entries[recent_entries.time_of_day == 'PM']))
-                                                
-                                                bwt_lower = 0.9*recent_bwt
-                                                bwt_upper = 1.1*recent_bwt
+                                user_temp = bodyweight[bodyweight.user_id == user_id]
+                                data_exists = False
+
+                                if len(user_temp) > 0:
+                                        data_exists = True
+                                        recent_bwt = user_temp.wt_lb.iloc[0]
+                                        recent_entries = user_temp[user_temp.date == current_date]
+                                        am_count = (len(recent_entries[recent_entries.time_of_day == 'AM']))
+                                        pm_count = (len(recent_entries[recent_entries.time_of_day == 'PM']))
                                         
+                                        bwt_lower = 0.9*recent_bwt
+                                        bwt_upper = 1.1*recent_bwt
+
+                                if data_exists:
                                         if (time_of_day == 'AM' and am_count == 1) or (time_of_day == 'PM' and pm_count == 1):
                                                 form_submit_msg.error('You have already submitted an entry for the time of day, please try again later')
-                                        else:
-                                                if not data_exists or (body_wt >= bwt_lower and body_wt <= bwt_upper):
-                                                        wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
-                                                        date = current_date
-                                                        bwt_entry = {'timestamp': timestamp,
-                                                                     'user_id': user_id,
-                                                                     'wt_lb': wt_lb,
-                                                                     'wt_kg': wt_kg,
-                                                                     'date': date,
-                                                                     'time_of_day': time_of_day}
-                                                        connect.submit_data(bwt_entry,'bodyweight')
-                                                        st.json(bwt_entry)
-                                                        form_submit_msg.success('Data Submitted')
-                                                elif (body_wt < bwt_lower or body_wt > bwt_upper):
-                                                        form_submit_msg.error('Bodyweight is not within reasonable bounds')
-                       
-                        
-                                                        
-                                                
+                                                return
 
-
-
+                                        if body_wt < bwt_lower or body_wt > bwt_upper:
+                                                form_submit_msg.error('Bodyweight is not within reasonable bounds')
+                                                return
+                                        
+                                        wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
+                                        date = current_date
+                                        bwt_entry = {'timestamp': timestamp,
+                                                        'user_id': user_id,
+                                                        'wt_lb': wt_lb,
+                                                        'wt_kg': wt_kg,
+                                                        'date': date,
+                                                        'time_of_day': time_of_day}
+                                        connect.submit_data(bwt_entry,'bodyweight')
+                                        st.json(bwt_entry)
+                                        form_submit_msg.success('Data Submitted')
+                                        return
+                                else:
+                                        wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
+                                        date = current_date
+                                        bwt_entry = {'timestamp': timestamp,
+                                                        'user_id': user_id,
+                                                        'wt_lb': wt_lb,
+                                                        'wt_kg': wt_kg,
+                                                        'date': date,
+                                                        'time_of_day': time_of_day}
+                                        connect.submit_data(bwt_entry,'bodyweight')
+                                        st.json(bwt_entry)
+                                        form_submit_msg.success('Data Submitted')
+                                        return
+                                                           
 # visualize personalized weight journey
 def weight_journey(tab, user_df):
         try:

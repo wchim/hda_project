@@ -36,11 +36,9 @@ def build_userview():
         user_df = components.print_profile(user_tabs[0], user)
         components.weight_journey(user_tabs[1], user_df)
         components.print_form(user_tabs[-1], user)
-    else:
-        components.overall_weight_progression()
-    
-    if st.button('Refresh View'):
-        st.experimental_memo.clear()
+        if st.button('Refresh View'):
+           st.experimental_memo.clear()
+
     ''' if ~fitness_opt:
         data_tab, graph_tab, form_tab = st.tabs(['Profile Summary','Weight Journey','Data Entry'])
     else:
