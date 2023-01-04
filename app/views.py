@@ -22,7 +22,8 @@ def build_userview():
                          'Vincent Lee',
                          'Suk Chim',
                          'Hing Chim',
-                         'Ernest Chim'])
+                         'Ernest Chim',
+                         'Haoxiang Chen'])
 
     #bodyweight, profile = connect.unload_data()
 
