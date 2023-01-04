@@ -39,6 +39,8 @@ def build_tabs(element, user):
 def print_profile(tab, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
         user_temp = bodyweight[bodyweight.user_id == user_id]
+        groupby_day = user_temp.groupby(['date']).wt_lb.mean()
+        
         try:
                 user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
                 bwt_goal = user_df.bw_goal.mean()
@@ -53,9 +55,8 @@ def print_profile(tab, user):
                         progress = round(recent_bwt - bwt_goal, 2)
                         metr2.metric('Bodyweight Goal', bwt_goal, progress, 'inverse')
                         # weekly change in weight
-                        # WRITE METRIC TO CHECK CHANGE WEEK OVER WEEK IN BODYWEIGHT
-                        if len(user_df) >= 7:
-                                wk_diff = user_df.wt_lb.iloc[-1] - user_df.wt_lb.iloc[-7]
+                        if len(groupby_day) >= 7:
+                                wk_diff = groupby_day.wt_lb.iloc[-1] - groupby_day.wt_lb.iloc[-7]
                                 metr3.metric('Weekly Change',wk_diff)
                         else:
                                 metr3.metric('Weekly Change','N/A')
@@ -96,6 +97,7 @@ def print_form(tab, user):
                                 current_date = str(current_time.date())
                                 time_of_day = current_time.strftime('%p')
 
+                                wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
                                 user_temp = bodyweight[bodyweight.user_id == user_id]
                                 data_exists = False
 
@@ -114,11 +116,10 @@ def print_form(tab, user):
                                                 form_submit_msg.error('You have already submitted an entry for the time of day, please try again later')
                                                 return
 
-                                        if body_wt < bwt_lower or body_wt > bwt_upper:
+                                        if wt_lb < bwt_lower or wt_lb > bwt_upper:
                                                 form_submit_msg.error('Bodyweight is not within reasonable bounds')
                                                 return
                                         
-                                        wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
                                         date = current_date
                                         bwt_entry = {'timestamp': timestamp,
                                                         'user_id': user_id,
@@ -131,7 +132,6 @@ def print_form(tab, user):
                                         form_submit_msg.success('Data Submitted')
                                         return
                                 else:
-                                        wt_lb, wt_kg = utils.convert_weight(unit, body_wt)
                                         date = current_date
                                         bwt_entry = {'timestamp': timestamp,
                                                         'user_id': user_id,
