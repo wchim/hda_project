@@ -27,6 +27,12 @@ def unload_data():
     #bodyweight = pd.DataFrame(list(db.test.find()))
     profile = pd.DataFrame(list(db.profile.find()))
     return bodyweight, profile
+    
+# refreshes mongodb connection for updated query
+def refresh_view(element):
+        refresh_btn = element.button('Refresh View')
+        if refresh_btn:
+                st.experimental_memo.clear()
 
 # writes new record to mongodb
 def submit_data(data_entry, collection):

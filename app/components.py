@@ -8,14 +8,14 @@ import connect
 import utils
 
 # loads mongodb into dataframe
-bodyweight, profile = connect.unload_data()
+#bodyweight, profile = connect.unload_data()
 
 # visualize comparison across all users
 def overall_weight_progression():
         pass
 
 # write welcome message based on data availability
-def write_welcome_msg(element, user):
+def write_welcome_msg(element, bodyweight, user):
         bwt_ct = len(bodyweight)
         if bwt_ct == 0:
                 element.subheader("Welcome to a fresh start! Let's start tracking data..")
@@ -23,7 +23,7 @@ def write_welcome_msg(element, user):
                 element.subheader(f'Welcome back, {user}')
 
 # build tabs as per selected user profile
-def build_tabs(element, user):
+def build_tabs(element, profile, user):
         lift_opt = profile[profile.user == user].lift_opt.iloc[0]
         run_opt = profile[profile.user == user].run_opt.iloc[0]
         tab_ls = ['Profile Summary','Weight Journey','Data Entry']
@@ -37,7 +37,7 @@ def build_tabs(element, user):
         return user_tabs
 
 # print profile summary
-def print_profile(tab, user):
+def print_profile(tab, bodyweight, profile, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
         user_temp = bodyweight[bodyweight.user_id == user_id]
         groupby_day = user_temp.groupby(['date']).wt_lb.mean()
@@ -69,7 +69,7 @@ def print_profile(tab, user):
                 tab.subheader("Looks like you're new around here, submit your first bodyweight entry to get started!")
 
 # print data entry form
-def print_form(tab, user):
+def print_form(tab, bodyweight, profile, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
         
         with tab:

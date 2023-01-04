@@ -10,9 +10,10 @@ import utils
 
 # construct web application home page
 def build_userview():
-
+    bodyweight, profile = connect.unload_data()
     #st.write(len(bodyweight))
-    st.title('Health Data App')
+    
+    st.title('Health Tracking App')
     # select a user through a dropdown
     user = st.selectbox('Profile',
                         ['Select Profile',
@@ -28,16 +29,16 @@ def build_userview():
     #user_id = profile[profile.user == user].user_id.iloc[0]
     welcome_msg = st.empty()
     tab_header = st.empty()
+    refresh_ele = st.empty()
 
     if user != 'Select Profile':
-        components.write_welcome_msg(welcome_msg, user)
-        user_tabs = components.build_tabs(tab_header, user)
-        user_df = components.print_profile(user_tabs[0], user)
+        components.write_welcome_msg(welcome_msg, bodyweight, user)
+        user_tabs = components.build_tabs(tab_header, profile, user)
+        user_df = components.print_profile(user_tabs[0], bodyweight, profile, user)
         components.weight_journey(user_tabs[1], user_df)
-        components.print_form(user_tabs[-1], user)
-    if st.button('Refresh View'):
-        st.experimental_memo.clear()
-
+        components.print_form(user_tabs[-1], bodyweight, profile, user)
+        connect.refresh_view(refresh_ele)
+        
     ''' if ~fitness_opt:
         data_tab, graph_tab, form_tab = st.tabs(['Profile Summary','Weight Journey','Data Entry'])
     else:
