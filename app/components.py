@@ -41,7 +41,7 @@ def print_profile(tab, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
         user_temp = bodyweight[bodyweight.user_id == user_id]
         groupby_day = user_temp.groupby(['date']).wt_lb.mean()
-        
+
         try:
                 user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
                 bwt_goal = user_df.bw_goal.mean()
@@ -63,8 +63,7 @@ def print_profile(tab, user):
                         else:
                                 metr3.metric('Weekly Change','N/A')
                                 metr3.caption('Need at least 7 days of data')
-                        st.table(user_df.sample(5))
-
+                        st.table(user_df.tail())
                 return user_df
         except:
                 tab.subheader("Looks like you're new around here, submit your first bodyweight entry to get started!")

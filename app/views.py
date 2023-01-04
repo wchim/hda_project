@@ -8,7 +8,6 @@ import connect
 import components
 import utils
 
-
 # construct web application home page
 def build_userview():
 
