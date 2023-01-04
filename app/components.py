@@ -61,7 +61,7 @@ def print_profile(tab, user):
                         else:
                                 metr3.metric('Weekly Change','N/A')
                                 metr3.caption('Need at least 7 days of data')
-                        st.table(user_df.tail())
+                        st.table(user_df.sample(5))
 
                 return user_df
         except:
