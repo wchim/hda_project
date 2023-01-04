@@ -28,11 +28,11 @@ def build_userview():
 
     #user_id = profile[profile.user == user].user_id.iloc[0]
     welcome_msg = st.empty()
-    user_tabs = st.empty()
+    tab_header = st.empty()
 
     if user != 'Select Profile':
         components.write_welcome_msg(welcome_msg, user)
-        user_tabs = components.build_tabs(user_tabs, user)
+        user_tabs = components.build_tabs(tab_header, user)
         user_df = components.print_profile(user_tabs[0], user)
         components.weight_journey(user_tabs[1], user_df)
         components.print_form(user_tabs[-1], user)
