@@ -1,4 +1,5 @@
 import streamlit as st
+import numpy as np
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta
@@ -54,6 +55,7 @@ def print_profile(tab, user):
                         # bodyweight goal set by user
                         progress = round(recent_bwt - bwt_goal, 2)
                         metr2.metric('Bodyweight Goal', bwt_goal, progress, 'inverse')
+                        metr2.caption(np.random.randint(2, size=5))
                         # weekly change in weight
                         if len(groupby_day) >= 7:
                                 wk_diff = groupby_day.wt_lb.iloc[-1] - groupby_day.wt_lb.iloc[-7]
@@ -143,7 +145,7 @@ def print_form(tab, user):
                                         st.json(bwt_entry)
                                         form_submit_msg.success('Data Submitted')
                                         return
-                                                           
+                                                        
 # visualize personalized weight journey
 def weight_journey(tab, user_df):
         try:
