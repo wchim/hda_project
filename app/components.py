@@ -185,8 +185,8 @@ def weight_journey(tab, user_df):
                 ))
                 fig.add_trace(go.Scatter(
                         mode='lines',
-                        x=user_df['date'],
-                        y=[bwt_avg]*len(user_df),
+                        x=user_df.groupby(['date']).date,
+                        y=user_df.groupby(['date']).wt_lb.mean(),
                         line={'color':'rebeccapurple','dash':'dot'},
                         name='Bodyweight Average',
                         opacity=0.5,
@@ -203,13 +203,13 @@ def weight_journey(tab, user_df):
                         legendgroup='group2'
                 ))
                 
-                if bwt_max >= bwt_avg:
+                if bwt_min >= bwt_avg:
                         fig.update_layout(
                                 yaxis_range=[bwt_goal-1, bwt_max+1]
                         )
                 else:
                         fig.update_layout(
-                                yaxis_range=[bwt_min-1, bwt_goal+1]
+                                yaxis_range=[bwt_min-1, bwt_max+1]
                         )
 
 
