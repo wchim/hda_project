@@ -2,6 +2,7 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 from datetime import datetime, timedelta
 
 import connect
@@ -146,6 +147,77 @@ def print_form(tab, bodyweight, profile, user):
                                                         
 # visualize personalized weight journey
 def weight_journey(tab, user_df):
+        try:
+                user_df.date = pd.to_datetime(user_df.date, infer_datetime_format=True)
+                user = user_df.user.iloc[0]
+                bwt_goal = user_df.bw_goal.mean()
+                bwt_avg = user_df.wt_lb.mean()
+                bwt_max = user_df.wt_lb.max()
+                bwt_min = user_df.wt_lb.min()
+                fig = go.Figure()
+                fig.update_layout(
+                        title=f"{user}'s Weight Journey",
+                        xaxis_title='Timeline',
+                        yaxis_title='Bodyweight (lbs)'
+                )
+                fig.add_trace(go.Scatter(
+                        mode='markers',
+                        x=user_df[user_df.time_of_day == 'AM']['date'],
+                        y=user_df[user_df.time_of_day == 'AM']['wt_lb'],
+                        marker={'color':'orangered','size':9,
+                        'line':{'color':'orange','width':1},
+                        'symbol':'hexagon'},
+                        name ='AM',
+                        opacity=0.7,
+                        legendgroup='group1',
+                        legendgrouptitle_text='Time of Day'
+                ))
+                fig.add_trace(go.Scatter(
+                        mode='markers',
+                        x=user_df[user_df.time_of_day == 'PM']['date'],
+                        y=user_df[user_df.time_of_day == 'PM']['wt_lb'],
+                        marker={'color':'royalblue','size':9,
+                        'line':{'color':'lightblue','width':1},
+                        'symbol':'hexagon'},
+                        name ='PM',
+                        opacity=0.7,
+                        legendgroup='group1'
+                ))
+                fig.add_trace(go.Scatter(
+                        mode='lines',
+                        x=user_df['date'],
+                        y=[bwt_avg]*len(user_df),
+                        line={'color':'rebeccapurple','dash':'dot'},
+                        name='Bodyweight Average',
+                        opacity=0.5,
+                        legendgroup='group2',
+                        legendgrouptitle_text='Profile Metrics'
+                ))
+                fig.add_trace(go.Scatter(
+                        mode='lines',
+                        x=user_df['date'],
+                        y=user_df['bw_goal'],
+                        line_color='goldenrod',
+                        name='Bodyweight Goal',
+                        opacity=0.8,
+                        legendgroup='group2'
+                ))
+                
+                if bwt_max >= bwt_avg:
+                        fig.update_layout(
+                                yaxis_range=[bwt_goal-1, bwt_max+1]
+                        )
+                else:
+                        fig.update_layout(
+                                yaxis_range=[bwt_min-1, bwt_goal+1]
+                        )
+
+
+                tab.plotly_chart(fig)
+        except:
+                tab.warning('Not Available')
+
+def weight_journey_old(tab, user_df):
         try:
                 user_df.date = pd.to_datetime(user_df.date, infer_datetime_format=True)
                 user = user_df.user.iloc[0]

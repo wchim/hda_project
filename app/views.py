@@ -25,8 +25,6 @@ def build_userview():
                          'Ernest Chim',
                          'Haoxiang Chen'])
 
-    #bodyweight, profile = connect.unload_data()
-
     #user_id = profile[profile.user == user].user_id.iloc[0]
     welcome_msg = st.empty()
     tab_header = st.empty()
