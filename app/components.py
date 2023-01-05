@@ -154,6 +154,7 @@ def weight_journey(tab, user_df):
                 bwt_avg = user_df.wt_lb.mean()
                 bwt_max = user_df.wt_lb.max()
                 bwt_min = user_df.wt_lb.min()
+                groupby_day = user_df.groupby(['date'], as_index=False).wt_lb.mean()
                 fig = go.Figure()
                 fig.update_layout(
                         title=f"{user}'s Weight Journey",
@@ -185,9 +186,9 @@ def weight_journey(tab, user_df):
                 ))
                 fig.add_trace(go.Scatter(
                         mode='lines',
-                        x=user_df.groupby(['date']).index,
-                        y=user_df.groupby(['date']).wt_lb.mean(),
-                        line={'color':'rebeccapurple','dash':'dot'},
+                        x=groupby_day.date,
+                        y=groupby_day.wt_lb,
+                        line={'color':'mediumpurple','dash':'dot'},
                         name='Bodyweight Average',
                         opacity=0.5,
                         legendgroup='group2',
@@ -203,7 +204,7 @@ def weight_journey(tab, user_df):
                         legendgroup='group2'
                 ))
                 
-                if bwt_min >= bwt_avg:
+                if bwt_min >= bwt_goal:
                         fig.update_layout(
                                 yaxis_range=[bwt_goal-1, bwt_max+1]
                         )
@@ -212,10 +213,9 @@ def weight_journey(tab, user_df):
                                 yaxis_range=[bwt_min-1, bwt_max+1]
                         )
 
-
                 tab.plotly_chart(fig)
         except:
-                tab.warning('Not Available')
+                st.warning('Not Available')
 
 def weight_journey_old(tab, user_df):
         try:
