@@ -185,7 +185,7 @@ def weight_journey(tab, user_df):
                 ))
                 fig.add_trace(go.Scatter(
                         mode='lines',
-                        x=user_df.groupby(['date']).date,
+                        x=user_df.groupby(['date']).index,
                         y=user_df.groupby(['date']).wt_lb.mean(),
                         line={'color':'rebeccapurple','dash':'dot'},
                         name='Bodyweight Average',
