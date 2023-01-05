@@ -215,7 +215,7 @@ def weight_journey(tab, user_df):
 
                 tab.plotly_chart(fig)
         except:
-                st.warning('Not Available')
+                tab.warning('Not Available')
 
 def weight_journey_old(tab, user_df):
         try:
