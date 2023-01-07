@@ -60,7 +60,7 @@ def print_profile(tab, bodyweight, profile, user):
                         # weekly change in weight
                         if len(groupby_day) >= 7:
                                 wk_diff = round(groupby_day.wt_lb.iloc[-1] - groupby_day.wt_lb.iloc[-7],2)
-                                col3.metric('Weekly Change (lbs)',wk_diff)
+                                col3.metric('Weekly Change (lbs)', wk_diff)
                         else:
                                 col3.metric('Weekly Change','N/A')
                                 col3.caption('Need at least 7 days of data')
