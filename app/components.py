@@ -41,28 +41,29 @@ def build_tabs(element, profile, user):
 def print_profile(tab, bodyweight, profile, user):
         user_id = profile[profile.user == user].user_id.iloc[0]
         user_temp = bodyweight[bodyweight.user_id == user_id]
-        groupby_day = user_temp.groupby(['date']).wt_lb.mean()
+        groupby_day = user_temp.groupby(['date'], as_index=False).wt_lb.mean()
 
         try:
                 user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
                 bwt_goal = user_df.bw_goal.mean()
                 with tab:
-                        metr1, metr2, metr3 = st.columns(3)
+                        col1, col2, col3 = st.columns(3)
                         # most recent bodyweight
                         recent_bwt = user_df.wt_lb.iloc[-1]
                         last_updated = str(user_df.date.iloc[-1])
-                        metr1.metric('Current Bodyweight', recent_bwt)
-                        metr1.caption(f'Last updated on {last_updated}')
+                        col1.metric('Current Bodyweight (lbs)', recent_bwt, f'Last updated on {last_updated}', 'off')
+                        #col1.caption(f'Last updated on {last_updated}')
+                        col1.metric('Daily Fluctuation (lbs)', 'DUMMY')
                         # bodyweight goal set by user
                         progress = round(recent_bwt - bwt_goal, 2)
-                        metr2.metric('Bodyweight Goal', bwt_goal, progress, 'inverse')
+                        col2.metric('Bodyweight Goal (lbs)', bwt_goal, progress, 'inverse')
                         # weekly change in weight
                         if len(groupby_day) >= 7:
-                                wk_diff = groupby_day.wt_lb.iloc[-1] - groupby_day.wt_lb.iloc[-7]
-                                metr3.metric('Weekly Change',wk_diff)
+                                wk_diff = round(groupby_day.wt_lb.iloc[-1] - groupby_day.wt_lb.iloc[-7],2)
+                                col3.metric('Weekly Change (lbs)',wk_diff)
                         else:
-                                metr3.metric('Weekly Change','N/A')
-                                metr3.caption('Need at least 7 days of data')
+                                col3.metric('Weekly Change','N/A')
+                                col3.caption('Need at least 7 days of data')
                         st.table(user_df.tail())
                 return user_df
         except:
