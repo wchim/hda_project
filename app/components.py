@@ -57,10 +57,10 @@ def print_profile(tab, bodyweight, profile, user):
                         col1.caption(f'Last updated on {last_updated}')
                         if len(records_today) > 1:
                                 day_diff = round(records_today.wt_lb.iloc[-1] - records_today.wt_lb.iloc[0],2)
-                                col1.metric('Daily Fluctuation (lbs)', day_diff)
+                                col1.metric('Daily Fluctuation (lbs)', day_diff, len(records_today), 'off')
                                 col1.caption('')
                         else:
-                                col1.metric('Daily Fluctuation (lbs)', 'N/A')
+                                col1.metric('Daily Fluctuation (lbs)', 'N/A', len(records_today), 'off')
                                 col1.caption('Need 2 records for the day')
                         # bodyweight goal set by user
                         progress = round(recent_bwt - bwt_goal, 2)
@@ -76,7 +76,7 @@ def print_profile(tab, bodyweight, profile, user):
                                 col3.caption('Need at least 7 days of data')
                         st.table(user_df.tail())
                 return user_df
-                
+
         except:
                 tab.subheader("Looks like you're new around here, submit your first bodyweight entry to get started!")
 
