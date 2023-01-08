@@ -76,6 +76,7 @@ def print_profile(tab, bodyweight, profile, user):
                                 col3.caption('Need at least 7 days of data')
                         st.table(user_df.tail())
                 return user_df
+                
         except:
                 tab.subheader("Looks like you're new around here, submit your first bodyweight entry to get started!")
 
