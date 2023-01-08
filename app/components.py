@@ -39,13 +39,12 @@ def build_tabs(element, profile, user):
 
 # print profile summary
 def print_profile(tab, bodyweight, profile, user):
-        today = str(datetime.now().date())
+        current_time = datetime.now() - timedelta(hours=5)
+        today = str(current_time.date())
         user_id = profile[profile.user == user].user_id.iloc[0]
         user_temp = bodyweight[bodyweight.user_id == user_id]
         avg_by_day = user_temp.groupby(['date'], as_index=False).wt_lb.mean()
         records_today = user_temp[user_temp.date == today]
-        st.write(today)
-        st.table(records_today)
 
         try:
                 user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
