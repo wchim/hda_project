@@ -39,9 +39,11 @@ def build_tabs(element, profile, user):
 
 # print profile summary
 def print_profile(tab, bodyweight, profile, user):
+        today = str(datetime.now().date())
         user_id = profile[profile.user == user].user_id.iloc[0]
         user_temp = bodyweight[bodyweight.user_id == user_id]
-        groupby_day = user_temp.groupby(['date'], as_index=False).wt_lb.mean()
+        avg_by_day = user_temp.groupby(['date'], as_index=False).wt_lb.mean()
+        records_today = user_temp[user_temp.date == today]
 
         try:
                 user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
@@ -51,15 +53,23 @@ def print_profile(tab, bodyweight, profile, user):
                         # most recent bodyweight
                         recent_bwt = user_df.wt_lb.iloc[-1]
                         last_updated = str(user_df.date.iloc[-1])
-                        col1.metric('Current Bodyweight (lbs)', recent_bwt, f'Last updated on {last_updated}', 'off')
-                        #col1.caption(f'Last updated on {last_updated}')
-                        col1.metric('Daily Fluctuation (lbs)', 'DUMMY')
+                        col1.metric('Current Bodyweight (lbs)', recent_bwt)
+                        col1.caption(f'Last updated on {last_updated}')
+                        if len(records_today) > 1:
+                                day_diff = round(records_today.wt_lb.iloc[-1] - records_today.wt_lb.iloc[0],2)
+                                col1.metric('Daily Fluctuation (lbs)', day_diff)
+                                col1.caption('')
+                        else:
+                                col1.metric('Daily Fluctuation (lbs)', 'N/A')
+                                col1.caption('Need 2 records for the day')
                         # bodyweight goal set by user
                         progress = round(recent_bwt - bwt_goal, 2)
                         col2.metric('Bodyweight Goal (lbs)', bwt_goal, progress, 'inverse')
+                        col2.caption('')
+                        col2.metric('Days Recorded', len(avg_by_day))
                         # weekly change in weight
-                        if len(groupby_day) >= 7:
-                                wk_diff = round(groupby_day.wt_lb.iloc[-1] - groupby_day.wt_lb.iloc[-7],2)
+                        if len(avg_by_day) >= 7:
+                                wk_diff = round(avg_by_day.wt_lb.iloc[-1] - avg_by_day.wt_lb.iloc[-7],2)
                                 col3.metric('Weekly Change (lbs)', wk_diff)
                         else:
                                 col3.metric('Weekly Change','N/A')
@@ -155,7 +165,7 @@ def weight_journey(tab, user_df):
                 bwt_avg = user_df.wt_lb.mean()
                 bwt_max = user_df.wt_lb.max()
                 bwt_min = user_df.wt_lb.min()
-                groupby_day = user_df.groupby(['date'], as_index=False).wt_lb.mean()
+                avg_by_day = user_df.groupby(['date'], as_index=False).wt_lb.mean()
                 fig = go.Figure()
                 fig.update_layout(
                         title=f"{user}'s Weight Journey",
@@ -187,8 +197,8 @@ def weight_journey(tab, user_df):
                 ))
                 fig.add_trace(go.Scatter(
                         mode='lines',
-                        x=groupby_day.date,
-                        y=groupby_day.wt_lb,
+                        x=avg_by_day.date,
+                        y=avg_by_day.wt_lb,
                         line={'color':'mediumpurple','dash':'dot'},
                         name='Bodyweight Average',
                         opacity=0.5,
