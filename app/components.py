@@ -44,6 +44,8 @@ def print_profile(tab, bodyweight, profile, user):
         user_temp = bodyweight[bodyweight.user_id == user_id]
         avg_by_day = user_temp.groupby(['date'], as_index=False).wt_lb.mean()
         records_today = user_temp[user_temp.date == today]
+        st.write(today)
+        st.table(records_today)
 
         try:
                 user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
