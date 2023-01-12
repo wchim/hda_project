@@ -65,8 +65,8 @@ def get_breakdown(wt_input, reps):
     rnd_orm = round_to_five(orm)
     print(f'Set Weight (lbs): {wt_input}\nSet Reps: {reps}\nORM (lbs): {orm}\nRounded ORM (lbs): {rnd_orm}')
 
-    perc = ['95%','90%','85%','80%','75%','70%','65%','60%','55%','50%']
-    set_reps = [3,5,7,9,10,12,14,16,18,20]
+    perc = ['Max','95%','90%','85%','80%','75%','70%','65%','60%','55%','50%']
+    set_reps = [1,3,5,7,9,10,12,14,16,18,20]
     set_wts = [round(reverse_orm(orm, r),2) for r in set_reps]
     rnd_set_wts = [round_to_five(r) for r in set_wts]
 
@@ -75,7 +75,7 @@ def get_breakdown(wt_input, reps):
                                  'Rounded Weight (lbs)': rnd_set_wts,
                                  'Reps': set_reps})
     #print(tabulate(wt_breakdown,headers='keys',showindex=False,tablefmt='heavy_outline'))
-    st.dataframe(wt_breakdown)
+    st.table(wt_breakdown)
 
 '''Generate monthly workout plan referencing 5/3/1 powerlifting program based on ONE WEIGHT'''
 def generate_exercise(orm):

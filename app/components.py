@@ -259,6 +259,19 @@ def weight_journey_old(tab, user_df):
         except:
                 tab.error('Not Available')
 
+# build repetition breakdown table
+def build_rbt(tab):
+        with tab:
+                with st.expander('Repetition Breakdown Table', expanded=False):
+                        rbt_col1, rbt_col2 = st.columns(2)
+                        lift_wt = rbt_col1.number_input(label='Weight Lifted',
+                                                        min_value=0,
+                                                        step=1)
+                        reps = rbt_col2.number_input(label='Set Repetitions',
+                                                     min_value=0,
+                                                     step=1)
+                        utils.get_breakdown(lift_wt, reps)
+
 # visualize personalized lifting performance
 def lift_performance(tab, lift_df):
         #

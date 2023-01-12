@@ -31,24 +31,15 @@ def build_userview():
     refresh_ele = st.empty()
 
     if user != 'Select Profile':
+        # load profile opt-ins
+        lift_opt = profile[profile.user == user].lift_opt.iloc[0]
+
+        # construct user view
         components.write_welcome_msg(welcome_msg, bodyweight, user)
         user_tabs = components.build_tabs(tab_header, profile, user)
         user_df = components.print_profile(user_tabs[0], bodyweight, profile, user)
         components.weight_journey(user_tabs[1], user_df)
         components.print_form(user_tabs[-1], bodyweight, profile, user)
         connect.refresh_view(refresh_ele)
-        
-    ''' if ~fitness_opt:
-        data_tab, graph_tab, form_tab = st.tabs(['Profile Summary','Weight Journey','Data Entry'])
-    else:
-        data_tab, graph_tab, form_tab, exercise_tab= st.tabs(['Profile Summary','Weight Journey','Data Entry','General Exercise Breakdown'])
-
-        with exercise_tab:
-            col1, col2 = st.columns(2)
-            lifted_wt = col1.number_input(label='Weight Lifted',
-                                        min_value=0,
-                                        step=1)
-            reps = col2.number_input(label='Set Repetitions',
-                                   min_value=0,
-                                   step=1)
-            utils.get_breakdown(lifted_wt, reps)'''
+        if lift_opt:
+            components.build_rbt(user_tabs[2])
