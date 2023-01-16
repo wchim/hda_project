@@ -33,6 +33,7 @@ def build_userview():
     if user != 'Select Profile':
         # load profile opt-ins
         lift_opt = profile[profile.user == user].lift_opt.iloc[0]
+        run_opt = profile[profile.user == user].run_opt.iloc[0]
 
         # construct user view
         components.write_welcome_msg(welcome_msg, bodyweight, user)
@@ -43,4 +44,7 @@ def build_userview():
         connect.refresh_view(refresh_ele)
         if lift_opt:
             components.build_rbt(user_tabs[2])
+            components.print_lift_form(user_tabs[-1], profile, user)
+        if run_opt:
+            components.print_run_form(user_tabs[-1], profile, user)
             

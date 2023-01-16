@@ -135,26 +135,26 @@ def print_form(tab, bodyweight, profile, user):
                                                 return
                                         
                                         date = current_date
-                                        bwt_entry = {'timestamp': timestamp,
-                                                        'user_id': user_id,
-                                                        'wt_lb': wt_lb,
-                                                        'wt_kg': wt_kg,
-                                                        'date': date,
-                                                        'time_of_day': time_of_day}
-                                        connect.submit_data(bwt_entry,'bodyweight')
-                                        st.json(bwt_entry)
+                                        entry = {'timestamp': timestamp,
+                                                'user_id': user_id,
+                                                'wt_lb': wt_lb,
+                                                'wt_kg': wt_kg,
+                                                'date': date,
+                                                'time_of_day': time_of_day}
+                                        connect.submit_data(entry,'bodyweight')
+                                        st.json(entry)
                                         form_submit_msg.success('Data Submitted')
                                         return
                                 else:
                                         date = current_date
-                                        bwt_entry = {'timestamp': timestamp,
-                                                        'user_id': user_id,
-                                                        'wt_lb': wt_lb,
-                                                        'wt_kg': wt_kg,
-                                                        'date': date,
-                                                        'time_of_day': time_of_day}
-                                        connect.submit_data(bwt_entry,'bodyweight')
-                                        st.json(bwt_entry)
+                                        entry = {'timestamp': timestamp,
+                                                'user_id': user_id,
+                                                'wt_lb': wt_lb,
+                                                'wt_kg': wt_kg,
+                                                'date': date,
+                                                'time_of_day': time_of_day}
+                                        connect.submit_data(entry,'bodyweight')
+                                        st.json(entry)
                                         form_submit_msg.success('Data Submitted')
                                         return
                                                         
@@ -263,14 +263,78 @@ def weight_journey_old(tab, user_df):
 def build_rbt(tab):
         with tab:
                 with st.expander('Repetition Breakdown Table', expanded=False):
-                        rbt_col1, rbt_col2 = st.columns(2)
-                        lift_wt = rbt_col1.number_input(label='Weight Lifted',
+                        col1, col2 = st.columns(2)
+                        lift_wt = col1.number_input(label='Weight Lifted',
                                                         min_value=0,
                                                         step=1)
-                        reps = rbt_col2.number_input(label='Set Repetitions',
+                        reps = col2.number_input(label='Set Repetitions',
                                                      min_value=0,
                                                      step=1)
                         utils.get_breakdown(lift_wt, reps)
+
+# print weight lifting entry form
+def print_lift_form(tab, profile, user):
+        user_id = profile[profile.user == user].user_id.iloc[0]
+
+        with tab:
+                with st.form('lift_form', clear_on_submit=True):
+                        col1, col2 = st.columns(2)
+                        lift_wt = col1.number_input(label='Weight Lifted (lbs)',
+                                                min_value=0,
+                                                step=1)
+                        reps = col2.number_input(label='Set Repetitions',
+                                                min_value=0,
+                                                step=1)
+                        lift_type = st.radio('Lift Performed',['Bench Press','Back Squat','Deadlift','Military Press'])
+                        form_submit_btn = st.form_submit_button('Submit Data')
+                        form_submit_msg = st.empty()
+                        if form_submit_btn:
+                                current_time = datetime.now() - timedelta(hours=5)
+                                #current_time = datetime.now()
+                                timestamp = current_time
+                                current_date = str(current_time.date())
+                                date = current_date
+                                orm = utils.find_orm(lift_wt, reps)
+                                entry = {'timestamp': timestamp,
+                                        'user_id': user_id,
+                                        'lift_type': lift_type,
+                                        'lift_wt': lift_wt,
+                                        'reps': reps,
+                                        'orm': orm,
+                                        'date': date}
+                                #connect.submit_data(entry, 'test')
+                                st.json(entry)
+                                form_submit_msg.info('This button buttons')
+
+# print running entry form
+def print_run_form(tab, profile, user):
+        user_id = profile[profile.user == user].user_id.iloc[0]
+
+        with tab:
+                with st.form('run_form', clear_on_submit=True):
+                        col1, col2 = st.columns(2)
+                        distance = col1.number_input(label='Distance Ran (Mi.)',
+                                                min_value=0,
+                                                step=1)
+                        run_time = col2.text_input('Run Time (MM:SS)')
+                        form_submit_btn = st.form_submit_button('Submit Data')
+                        form_submit_msg = st.empty()
+                        if form_submit_btn:
+                                current_time = datetime.now() - timedelta(hours=5)
+                                #current_time = datetime.now()
+                                timestamp = current_time
+                                current_date = str(current_time.date())
+                                date = current_date
+                                #pace = utils.find_pace(distance, run_time)
+                                pace = 'Pacing'
+                                entry = {'timestamp': timestamp,        
+                                        'user_id': user_id,
+                                        'distance': distance,
+                                        'run_time': run_time,
+                                        'pace': pace,
+                                        'date': date}
+                                st.json(entry)
+                                form_submit_msg.info('This button buttons')
 
 # visualize personalized lifting performance
 def lift_performance(tab, lift_df):
