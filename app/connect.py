@@ -24,9 +24,11 @@ db = init_connection()
 @st.experimental_memo(ttl=600)
 def unload_data():
     bodyweight = pd.DataFrame(list(db.bodyweight.find()))
-    #bodyweight = pd.DataFrame(list(db.test.find()))
+    home_fitness = pd.DataFrame(list(db.home_fitness.find()))
+    lifting = pd.DataFrame(list(db.lifting.find()))
+    running = pd.DataFrame(list(db.running.find()))
     profile = pd.DataFrame(list(db.profile.find()))
-    return bodyweight, profile
+    return bodyweight, home_fitness, lifting, running, profile
     
 # refreshes mongodb connection for updated query
 def refresh_view(element):

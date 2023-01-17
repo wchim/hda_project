@@ -10,41 +10,39 @@ import utils
 
 # construct web application home page
 def build_userview():
-    bodyweight, profile = connect.unload_data()
-    #st.write(len(bodyweight))
-    
+    bodyweight, home_fitness, lifting, running, profile = connect.unload_data()
     st.title('Health Tracking App')
     # select a user through a dropdown
-    user = st.selectbox('Profile',
-                        ['Select Profile',
-                         'Wayne Chim',
-                         'Joyce Chan',
-                         'Vincent Lee',
-                         'Suk Chim',
-                         'Hing Chim',
-                         'Ernest Chim',
-                         'Haoxiang Chen'])
-
-    #user_id = profile[profile.user == user].user_id.iloc[0]
+    user, user_id = components.get_user(profile)
     welcome_msg = st.empty()
     tab_header = st.empty()
     refresh_ele = st.empty()
 
     if user != 'Select Profile':
         # load profile opt-ins
+        homefit_opt = profile[profile.user == user].homefit_opt.iloc[0]
         lift_opt = profile[profile.user == user].lift_opt.iloc[0]
         run_opt = profile[profile.user == user].run_opt.iloc[0]
 
         # construct user view
         components.write_welcome_msg(welcome_msg, bodyweight, user)
         user_tabs = components.build_tabs(tab_header, profile, user)
-        user_df = components.print_profile(user_tabs[0], bodyweight, profile, user)
-        components.weight_journey(user_tabs[1], user_df)
-        components.print_form(user_tabs[-1], bodyweight, profile, user)
+        user_bwt_df = components.print_profile(user_tabs[0], bodyweight, profile, user)
+        components.weight_journey(user_tabs[1], user_bwt_df)
+        components.print_bwt_form(user_tabs[-1], bodyweight, user_id)
         connect.refresh_view(refresh_ele)
-        if lift_opt:
+        # always 2
+        if homefit_opt and lift_opt:
+            components.measure_home_fitness(user_tabs[2], home_fitness, profile, user_id)
+            components.print_homefit_form(user_tabs[-1], home_fitness, user_id)
+            components.build_rbt(user_tabs[3])
+        elif not homefit_opt and lift_opt:
             components.build_rbt(user_tabs[2])
-            components.print_lift_form(user_tabs[-1], profile, user)
+
+        if lift_opt:
+            components.print_lift_form(user_tabs[-1], user_id)  
+        # always -2
         if run_opt:
-            components.print_run_form(user_tabs[-1], profile, user)
+            components.running_performance(user_tabs[-2], running, profile, user_id)
+            components.print_run_form(user_tabs[-1], user_id)
             

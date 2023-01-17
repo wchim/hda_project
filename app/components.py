@@ -15,6 +15,23 @@ import utils
 def overall_weight_progression():
         pass
 
+# retrieve user and user id based on profile selected
+def get_user(profile):
+        user = st.selectbox('Profile',
+                        ['Select Profile',
+                        'Wayne Chim',
+                        'Joyce Chan',
+                        'Vincent Lee',
+                        'Suk Chim',
+                        'Hing Chim',
+                        'Ernest Chim',
+                        'Haoxiang Chen'])
+        if user == 'Select Profile':
+                user_id = '000'
+        else:
+                user_id = profile[profile.user == user].user_id.iloc[0]
+        return user, user_id
+
 # write welcome message based on data availability
 def write_welcome_msg(element, bodyweight, user):
         bwt_ct = len(bodyweight)
@@ -25,10 +42,13 @@ def write_welcome_msg(element, bodyweight, user):
 
 # build tabs as per selected user profile
 def build_tabs(element, profile, user):
+        homefit_opt = profile[profile.user == user].homefit_opt.iloc[0]
         lift_opt = profile[profile.user == user].lift_opt.iloc[0]
         run_opt = profile[profile.user == user].run_opt.iloc[0]
         tab_ls = ['Profile Summary','Weight Journey','Data Entry']
         # check for lifting performance tracking opt-in
+        if homefit_opt:
+                tab_ls.insert(len(tab_ls)-1, 'Home Fitness')
         if lift_opt:
                 tab_ls.insert(len(tab_ls)-1, 'Lifting Performance')
         # check for running performance tracking opt-in
@@ -82,9 +102,7 @@ def print_profile(tab, bodyweight, profile, user):
                 tab.subheader("Looks like you're new around here, submit your first bodyweight entry to get started!")
 
 # print data entry form
-def print_form(tab, bodyweight, profile, user):
-        user_id = profile[profile.user == user].user_id.iloc[0]
-        
+def print_bwt_form(tab, bodyweight, user_id):
         with tab:
                 with st.form('bwt_form', clear_on_submit=True):
                         # input bodyweight
@@ -230,6 +248,68 @@ def weight_journey(tab, user_df):
         except:
                 tab.warning('Not Available')
 
+# visualize personalized home fitness measure
+def measure_home_fitness(tab, home_fitness, profile, user_id):
+        try:
+                user_temp = home_fitness[home_fitness.user_id == user_id]
+                user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
+                current_time = datetime.now() - timedelta(hours=5)
+                current_date = str(current_time.date())
+                curr_exer = user_df[user_df.date == current_date].groupby(['exercise'], as_index=False).reps.sum()
+                exer_by_day = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
+                user = user_df.user.iloc[0]
+                pushup_goal = user_df.pushup_goal.iloc[0]
+                pullup_goal = user_df.pullup_goal.iloc[0]
+                lraise_goal = user_df.lraise_goal.iloc[0]
+                kraise_goal = user_df.kraise_goal.iloc[0]
+                fig = go.Figure()
+                fig.update_layout(
+                        title=f"{user}'s {current_date} Home Fitness Status Report",
+                        xaxis_title='Home Exercises',
+                        yaxis_title='Repetitions In'
+                )
+                fig.add_trace(go.Bar(
+                        x=curr_exer.exercise,
+                        y=curr_exer.reps
+                ))
+                fig.add_trace(go.Scatter(
+                        x=['Push Ups'],
+                        y=user_df.pushup_goal
+                ))
+                fig.add_trace(go.Scatter(
+                        x=['Pull Ups'],
+                        y=user_df.pullup_goal
+                ))
+                fig.add_trace(go.Scatter(
+                        x=['Straight Leg Raises'],
+                        y=user_df.lraise_goal
+                ))
+                fig.add_trace(go.Scatter(
+                        x=['Vertical Knee Raises'],
+                        y=user_df.kraise_goal
+                ))
+                tab.plotly_chart(fig)
+                tab.table(user_df)
+                tab.table(curr_exer)
+                tab.table(exer_by_day)
+                # home fitness notes
+                #
+                # EXERCISES DEPEND ON USER LIST
+                # GRAPH TRACKS DAILY PROGRESS TO GOAL, RESETS EVERY DAY
+                # UPDATE LEGEND
+                # ADD GRAPH FOR OVERALL PROGRESS FOR EACH EXERCISE (COMBINED LINE GRAPH TIMELINE)
+                #
+        except:
+                tab.warning('Not Available')
+
+# visualize personalized running performance
+def running_performance(tab, running, profile, user_id):
+        try:
+                user_temp = running[running.user_id == user_id]
+                user_run_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
+        except:
+                tab.warning('Not Available')
+
 def weight_journey_old(tab, user_df):
         try:
                 user_df.date = pd.to_datetime(user_df.date, infer_datetime_format=True)
@@ -272,10 +352,39 @@ def build_rbt(tab):
                                                      step=1)
                         utils.get_breakdown(lift_wt, reps)
 
-# print weight lifting entry form
-def print_lift_form(tab, profile, user):
-        user_id = profile[profile.user == user].user_id.iloc[0]
+# print home fitness entry form
+def print_homefit_form(tab, home_fitness, user_id):
+        with tab:
+                with st.form('homefit_form', clear_on_submit=True):
+                        col1, col2 = st.columns(2)
+                        reps = col1.number_input(label='Repetitions In',
+                                                min_value=0,
+                                                step=1)
+                        exercise = st.radio('Home Exercise',
+                        ['Push Ups','Pull Ups','Vertical Knee Raises','Straight Leg Raises'])
+                        if exercise == 'Push Ups':
+                                exer_cat = 'BWT'
+                        else:
+                                exer_cat = 'TWR'
+                        form_submit_btn = st.form_submit_button('Submit Data')
+                        form_submit_msg = st.empty()
+                        if form_submit_btn:
+                                current_time = datetime.now() - timedelta(hours=5)
+                                timestamp = current_time
+                                current_date = str(current_time.date())
+                                date = current_date
+                                entry = {'timestamp': timestamp,
+                                        'user_id': user_id,
+                                        'exercise': exercise,
+                                        'reps': reps,
+                                        'exer_cat': exer_cat,
+                                        'date': date}
+                                #connect.submit_data(entry, 'home_fitness')
+                                st.json(entry)
+                                form_submit_msg.info('This button buttons')
 
+# print weight lifting entry form
+def print_lift_form(tab, user_id):
         with tab:
                 with st.form('lift_form', clear_on_submit=True):
                         col1, col2 = st.columns(2)
@@ -285,12 +394,12 @@ def print_lift_form(tab, profile, user):
                         reps = col2.number_input(label='Set Repetitions',
                                                 min_value=0,
                                                 step=1)
-                        lift_type = st.radio('Lift Performed',['Bench Press','Back Squat','Deadlift','Military Press'])
+                        lift_type = st.radio('Lift Performed',
+                        ['Bench Press','Back Squat','Deadlift','Military Press'])
                         form_submit_btn = st.form_submit_button('Submit Data')
                         form_submit_msg = st.empty()
                         if form_submit_btn:
                                 current_time = datetime.now() - timedelta(hours=5)
-                                #current_time = datetime.now()
                                 timestamp = current_time
                                 current_date = str(current_time.date())
                                 date = current_date
@@ -307,9 +416,7 @@ def print_lift_form(tab, profile, user):
                                 form_submit_msg.info('This button buttons')
 
 # print running entry form
-def print_run_form(tab, profile, user):
-        user_id = profile[profile.user == user].user_id.iloc[0]
-
+def print_run_form(tab, user_id):
         with tab:
                 with st.form('run_form', clear_on_submit=True):
                         col1, col2 = st.columns(2)
@@ -321,7 +428,6 @@ def print_run_form(tab, profile, user):
                         form_submit_msg = st.empty()
                         if form_submit_btn:
                                 current_time = datetime.now() - timedelta(hours=5)
-                                #current_time = datetime.now()
                                 timestamp = current_time
                                 current_date = str(current_time.date())
                                 date = current_date
