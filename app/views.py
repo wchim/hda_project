@@ -34,7 +34,7 @@ def build_userview():
         # always 2
         if homefit_opt and lift_opt:
             components.measure_home_fitness(user_tabs[2], home_fitness, profile, user_id)
-            components.print_homefit_form(user_tabs[-1], home_fitness, user_id)
+            components.print_homefit_form(user_tabs[-1], home_fitness, profile, user_id)
             components.build_rbt(user_tabs[3])
         elif not homefit_opt and lift_opt:
             components.build_rbt(user_tabs[2])
