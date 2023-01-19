@@ -248,7 +248,7 @@ def weight_journey(tab, user_df):
         except:
                 tab.warning('Not Available')
 
-# visualize personalized home fitness measure
+# visualize daily home fitness progress
 def measure_home_fitness(tab, home_fitness, profile, user_id):
         user_temp = home_fitness[home_fitness.user_id == user_id]
         user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
@@ -259,26 +259,40 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
         exer_by_day = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
         user = user_df.user.iloc[0]
         home_exercises = user_df.home_exercises.iloc[0]
-        fig = go.Figure()
-        fig.update_layout(
-                title=f"{user}'s {current_date} Home Fitness Status Report",
+        fig1 = go.Figure()
+        fig1.update_layout(
+                title=f'{current_date} Home Fitness Status Report',
                 xaxis_title='Home Exercises',
                 yaxis_title='Repetitions In'
         )
-        fig.add_trace(go.Bar(
+        fig1.add_trace(go.Bar(
                 x=curr_exer.exercise,
                 y=curr_exer.reps,
                 name='Repetitions In'
         ))
         
         for exer in home_exercises:
-                fig.add_trace(go.Scatter(
+                fig1.add_trace(go.Scatter(
                         x=[exer],
                         y=[home_exercises[exer]],
                         name=exer
                 ))
+
+        # # # # #
+        fig2 = go.Figure()
+        fig2.update_layout(
+                title=f'Overall Home Fitness Summary',
+                xaxis_title='Timeline',
+                yaxis_title='Repetitions In'
+        )
+        for exer in home_exercises:
+                fig2.add_trace(go.Scatter(
+                        x=exer_by_day[exer_by_day.exercise == exer]['date'],
+                        y=exer_by_day[exer_by_day.exercise == exer]['reps']
+                ))
                 
-        tab.plotly_chart(fig)
+        tab.plotly_chart(fig1)
+        tab.plotly_chart(fig2)
         tab.table(user_df.tail(5))
         tab.table(curr_exer)
         tab.table(exer_by_day)
@@ -353,7 +367,7 @@ def print_homefit_form(tab, home_fitness, profile, user_id):
                                                 step=1)
                         exercise = st.radio('Home Exercise',
                         home_exercises)
-                        if exercise == 'Push-Ups'or exercise == 'Squats':
+                        if exercise == 'Push-Ups'or exercise == 'Squats' or exercise == 'Rest':
                                 exer_cat = 'BWT'
                         else:
                                 exer_cat = 'TWR'
