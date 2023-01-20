@@ -250,61 +250,104 @@ def weight_journey(tab, user_df):
 
 # visualize daily home fitness progress
 def measure_home_fitness(tab, home_fitness, profile, user_id):
-        user_temp = home_fitness[home_fitness.user_id == user_id]
-        user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
-        current_time = datetime.now() - timedelta(hours=5)
-        current_date = str(current_time.date())
-        #curr_exer = user_df[user_df.date == current_date].groupby(['exercise'], as_index=False).reps.sum()
-        curr_exer = user_df.groupby(['exercise'], as_index=False).reps.sum()
-        exer_by_day = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
-        user = user_df.user.iloc[0]
-        home_exercises = user_df.home_exercises.iloc[0]
-        fig1 = go.Figure()
-        fig1.update_layout(
-                title=f'{current_date} Home Fitness Status Report',
-                xaxis_title='Home Exercises',
-                yaxis_title='Repetitions In'
-        )
-        fig1.add_trace(go.Bar(
-                x=curr_exer.exercise,
-                y=curr_exer.reps,
-                name='Repetitions In'
-        ))
-        
-        for exer in home_exercises:
-                fig1.add_trace(go.Scatter(
-                        x=[exer],
-                        y=[home_exercises[exer]],
-                        name=exer
-                ))
 
-        # # # # #
-        fig2 = go.Figure()
-        fig2.update_layout(
-                title=f'Overall Home Fitness Summary',
-                xaxis_title='Timeline',
-                yaxis_title='Repetitions In'
-        )
-        for exer in home_exercises:
-                fig2.add_trace(go.Scatter(
-                        x=exer_by_day[exer_by_day.exercise == exer]['date'],
-                        y=exer_by_day[exer_by_day.exercise == exer]['reps']
+        try:
+                user_temp = home_fitness[home_fitness.user_id == user_id]
+                user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
+                home_exercises = user_df.home_exercises.iloc[0]
+                current_time = datetime.now() - timedelta(hours=5)
+                current_date = str(current_time.date())
+                        
+                fitness_targets = pd.DataFrame()
+                fitness_targets['exercise'] = [exer for exer in home_exercises]
+                fitness_targets['target'] = [home_exercises[exer] for exer in home_exercises]
+
+                daily_exer = user_df[user_df.date == current_date].groupby(['exercise'], as_index=False).reps.sum()
+                #daily_exer = user_df.groupby(['exercise'], as_index=False).reps.sum()
+                daily_exer['target'] = [home_exercises[record[0]] for record in daily_exer.values]
+                daily_exer['progress'] = daily_exer.reps/daily_exer.target
+                daily_exer.sort_values(by=['progress'], inplace=True)
+
+                overall_exer = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
+                overall_exer.sort_values(by=['date','reps'], inplace=True)
+                
+                fig1 = go.Figure()
+                fig1.update_layout(
+                        title=f'Daily Home Fitness Status Update',
+                        xaxis_title='Repetitions In',
+                        yaxis_title='Home Exercises',
+                        xaxis_range=[0,1],
+                        barmode='overlay',
+                        legend={'font':{'size':12}}
+                )
+
+                if len(daily_exer) == 0:
+                        y = fitness_targets.exercise
+                        text = fitness_targets.target
+                else:
+                        y = daily_exer.exercise
+                        text = daily_exer.target
+
+                fig1.add_trace(go.Bar(
+                        x=[1]*len(y),
+                        y=y,
+                        name='Target',
+                        text=text,
+                        orientation='h',
+                        marker_color='white',
+                        marker_line_color='gray',
+                        opacity=0.4,
+                        marker_line_width=1,
+                        textfont_color='black'
+                ))
+                fig1.add_trace(go.Bar(
+                        x=daily_exer.progress,
+                        y=daily_exer.exercise,
+                        name='Repetitions In',
+                        text=daily_exer.reps,
+                        orientation='h',
+                        marker_color='mediumpurple',
+                        textfont_color='white'
                 ))
                 
-        tab.plotly_chart(fig1)
-        tab.plotly_chart(fig2)
-        tab.table(user_df.tail(5))
-        tab.table(curr_exer)
-        tab.table(exer_by_day)
-                # home fitness notes
-                #
-                # EXERCISES DEPEND ON USER LIST
-                # GRAPH TRACKS DAILY PROGRESS TO GOAL, RESETS EVERY DAY
-                # UPDATE LEGEND
-                # ADD GRAPH FOR OVERALL PROGRESS FOR EACH EXERCISE (COMBINED LINE GRAPH TIMELINE)
-                #
-        '''except:
-                tab.warning('Not Available')'''
+                fig2 = go.Figure()
+                fig2.update_layout(
+                        title=f'Overall Home Fitness Summary',
+                        xaxis_title='Timeline',
+                        yaxis_title='Repetitions In',
+                        legend={'font':{'size':10}}
+                )
+                color_palette = ['peachpuff','palegreen','mistyrose','lightcoral','cornflowerblue']
+                idx = 0
+                for exer in home_exercises:
+                        fig2.add_trace(go.Scatter(
+                                x=overall_exer[overall_exer.exercise == exer]['date'],
+                                y=overall_exer[overall_exer.exercise == exer]['reps'],
+                                name=exer,
+                                marker={'color':color_palette[idx],'size':9,
+                                'line':{'color':'dimgray','width':1},
+                                'symbol':'hexagon'},
+                                line={'dash':'dot'}
+                        ))
+                        idx += 1
+
+                tab.plotly_chart(fig1)
+                tab.plotly_chart(fig2)
+                tab.table(user_df.tail(2))
+                tab.table(daily_exer.tail(5))
+                tab.table(overall_exer.tail(5))
+
+                return daily_exer
+                        # home fitness notes
+                        #
+                        # ADJUST COLORS AND SCALE PROGRESS TO GOAL AS 100%
+                        # EXERCISES DEPEND ON USER LIST
+                        # GRAPH TRACKS DAILY PROGRESS TO GOAL, RESETS EVERY DAY
+                        # UPDATE LEGEND
+                        # ADD GRAPH FOR OVERALL PROGRESS FOR EACH EXERCISE (COMBINED LINE GRAPH TIMELINE)
+                        #
+        except:
+                tab.warning('Not Available')
 
 # visualize personalized running performance
 def running_performance(tab, running, profile, user_id):
@@ -313,35 +356,6 @@ def running_performance(tab, running, profile, user_id):
                 user_run_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
         except:
                 tab.warning('Not Available')
-
-def weight_journey_old(tab, user_df):
-        try:
-                user_df.date = pd.to_datetime(user_df.date, infer_datetime_format=True)
-                user = user_df.user.iloc[0]
-                bodyweight_goal = user_df.bw_goal.mean()
-                bodyweight_avg = user_df.wt_lb.mean()
-                fig = px.scatter(data_frame=user_df,
-                                x='date',
-                                y='wt_lb',
-                                title= f"{user}'s Weight Journey",
-                                labels={
-                                'date': 'Timeline',
-                                'wt_lb': 'Bodyweight (lbs)',
-                                'time_of_day': 'Time of Day'},
-                                trendline='rolling',
-                                trendline_options=dict(window=7),
-                                trendline_color_override='gray',
-                                opacity=0.7,
-                                color='time_of_day',
-                                color_discrete_map={
-                                'AM':'orangered',
-                                'PM':'royalblue'})
-                fig.update_layout(yaxis_range=[bodyweight_goal-1, user_df.wt_lb.max()+1])
-                fig.add_hline(y=bodyweight_goal,line_color='goldenrod',opacity=0.8)
-                fig.add_hline(y=bodyweight_avg,line_dash='dot',line_color='rebeccapurple',opacity=0.5)
-                tab.plotly_chart(fig)
-        except:
-                tab.error('Not Available')
 
 # build repetition breakdown table
 def build_rbt(tab):
@@ -354,7 +368,8 @@ def build_rbt(tab):
                         reps = col2.number_input(label='Set Repetitions',
                                                      min_value=0,
                                                      step=1)
-                        utils.get_breakdown(lift_wt, reps)
+                        if lift_wt > 0 and reps > 0:
+                                utils.get_breakdown(lift_wt, reps)
 
 # print home fitness entry form
 def print_homefit_form(tab, home_fitness, profile, user_id):
@@ -367,13 +382,14 @@ def print_homefit_form(tab, home_fitness, profile, user_id):
                                                 step=1)
                         exercise = st.radio('Home Exercise',
                         home_exercises)
-                        if exercise == 'Push-Ups'or exercise == 'Squats' or exercise == 'Rest':
-                                exer_cat = 'BWT'
-                        else:
-                                exer_cat = 'TWR'
+                        
                         form_submit_btn = st.form_submit_button('Submit Data')
                         form_submit_msg = st.empty()
                         if form_submit_btn:
+                                if reps <= 0:
+                                        form_submit_msg.error('Repetitions cannot be 0')
+                                        return
+
                                 current_time = datetime.now() - timedelta(hours=5)
                                 timestamp = current_time
                                 current_date = str(current_time.date())
@@ -382,11 +398,10 @@ def print_homefit_form(tab, home_fitness, profile, user_id):
                                         'user_id': user_id,
                                         'exercise': exercise,
                                         'reps': reps,
-                                        'exer_cat': exer_cat,
                                         'date': date}
                                 #connect.submit_data(entry, 'home_fitness')
                                 st.json(entry)
-                                form_submit_msg.info('This button buttons')
+                                form_submit_msg.success('Data Submitted')
 
 # print weight lifting entry form
 def print_lift_form(tab, user_id):
