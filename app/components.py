@@ -268,7 +268,7 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
         daily_exer['progress_adjust'] = [1 if n >= 1 else n for n in daily_exer.progress]
         daily_exer['marker_color'] = ['palegoldenrod' if n == 1 else 'mediumpurple' for n in daily_exer.progress_adjust]
         daily_exer['textfont_color'] = ['black' if n == 1 else 'white' for n in daily_exer.progress_adjust]
-        daily_exer.sort_values(by=['progress_adjust'], inplace=True)
+        #daily_exer.sort_values(by=['progress_adjust'], inplace=True)
 
         overall_exer = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
         overall_exer.sort_values(by=['date','reps'], inplace=True)
@@ -293,11 +293,12 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                                 s = {'exercise':n,
                                 'reps':0,
                                 'target':home_exercises[n],
-                                'progress':None,
-                                'progress_adjust':None,
+                                'progress':0,
+                                'progress_adjust':0,
                                 'marker_color':'mediumpurple',
                                 'textfont_color':'black'}
                                 daily_exer = daily_exer.append(s, ignore_index=True)
+                daily_exer.sort_values(by=['progress_adjust'], inplace=True)
                 y = daily_exer.exercise
                 text = daily_exer.target
 
