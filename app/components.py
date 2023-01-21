@@ -266,7 +266,10 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                 #daily_exer = user_df.groupby(['exercise'], as_index=False).reps.sum()
                 daily_exer['target'] = [home_exercises[record[0]] for record in daily_exer.values]
                 daily_exer['progress'] = daily_exer.reps/daily_exer.target
-                daily_exer.sort_values(by=['progress'], inplace=True)
+                daily_exer['progress_adjust'] = [1 if n >= 1 else n for n in daily_exer.progress]
+                daily_exer['marker_color'] = ['palegoldenrod' if n == 1 else 'mediumpurple' for n in daily_exer.progress_adjust]
+                daily_exer['textfont_color'] = ['black' if n == 1 else 'white' for n in daily_exer.progress_adjust]
+                daily_exer.sort_values(by=['progress_adjust'], ascending=False, inplace=True)
 
                 overall_exer = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
                 overall_exer.sort_values(by=['date','reps'], inplace=True)
@@ -274,19 +277,16 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                 fig1 = go.Figure()
                 fig1.update_layout(
                         title=f'Daily Home Fitness Status Update',
-                        xaxis_title='Repetitions In',
+                        xaxis_title='Repetition Progress',
                         yaxis_title='Home Exercises',
                         xaxis_range=[0,1],
                         barmode='overlay',
-                        legend={'font':{'size':12}}
+                        legend={'font':{'size':12}},
+                        showlegend=False
                 )
 
-                if len(daily_exer) == 0:
-                        y = fitness_targets.exercise
-                        text = fitness_targets.target
-                else:
-                        y = daily_exer.exercise
-                        text = daily_exer.target
+                y = fitness_targets.exercise
+                text = fitness_targets.target
 
                 fig1.add_trace(go.Bar(
                         x=[1]*len(y),
@@ -294,28 +294,34 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                         name='Target',
                         text=text,
                         orientation='h',
-                        marker_color='white',
+                        marker_color='seashell',
                         marker_line_color='gray',
                         opacity=0.4,
                         marker_line_width=1,
                         textfont_color='black'
                 ))
+
+                marker_color=daily_exer.marker_color.values.tolist()
+                textfont_color=daily_exer.textfont_color.values.tolist()
+                
                 fig1.add_trace(go.Bar(
-                        x=daily_exer.progress,
+                        x=daily_exer.progress_adjust,
                         y=daily_exer.exercise,
                         name='Repetitions In',
                         text=daily_exer.reps,
                         orientation='h',
-                        marker_color='mediumpurple',
-                        textfont_color='white'
+                        marker_color=marker_color,
+                        textfont_color=textfont_color
                 ))
                 
                 fig2 = go.Figure()
                 fig2.update_layout(
                         title=f'Overall Home Fitness Summary',
                         xaxis_title='Timeline',
-                        yaxis_title='Repetitions In',
-                        legend={'font':{'size':10}}
+                        yaxis_title='Repetitions In ',
+                        yaxis_range=[overall_exer.reps.min()*0.5,overall_exer.reps.max()+2],
+                        legend={'font':{'size':11}},
+                        showlegend=True
                 )
                 color_palette = ['peachpuff','palegreen','mistyrose','lightcoral','cornflowerblue']
                 idx = 0
@@ -333,9 +339,9 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
 
                 tab.plotly_chart(fig1)
                 tab.plotly_chart(fig2)
-                tab.table(user_df.tail(2))
-                tab.table(daily_exer.tail(5))
-                tab.table(overall_exer.tail(5))
+                #tab.table(user_df.tail(2))
+                #tab.table(daily_exer.tail(5))
+                #tab.table(overall_exer.tail(5))
 
                 return daily_exer
                         # home fitness notes
@@ -372,7 +378,7 @@ def build_rbt(tab):
                                 utils.get_breakdown(lift_wt, reps)
 
 # print home fitness entry form
-def print_homefit_form(tab, home_fitness, profile, user_id):
+def print_homefit_form(tab, profile, user_id):
         home_exercises = profile[profile.user_id == user_id].home_exercises.iloc[0]
         with tab:
                 with st.form('homefit_form', clear_on_submit=True):
@@ -394,12 +400,13 @@ def print_homefit_form(tab, home_fitness, profile, user_id):
                                 timestamp = current_time
                                 current_date = str(current_time.date())
                                 date = current_date
+
                                 entry = {'timestamp': timestamp,
                                         'user_id': user_id,
                                         'exercise': exercise,
                                         'reps': reps,
                                         'date': date}
-                                #connect.submit_data(entry, 'home_fitness')
+                                connect.submit_data(entry, 'home_fitness')
                                 st.json(entry)
                                 form_submit_msg.success('Data Submitted')
 
