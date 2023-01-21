@@ -251,99 +251,109 @@ def weight_journey(tab, user_df):
 # visualize daily home fitness progress
 def measure_home_fitness(tab, home_fitness, profile, user_id):
 
-        try:
-                user_temp = home_fitness[home_fitness.user_id == user_id]
-                user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
-                home_exercises = user_df.home_exercises.iloc[0]
-                current_time = datetime.now() - timedelta(hours=5)
-                current_date = str(current_time.date())
-                        
-                fitness_targets = pd.DataFrame()
-                fitness_targets['exercise'] = [exer for exer in home_exercises]
-                fitness_targets['target'] = [home_exercises[exer] for exer in home_exercises]
-
-                daily_exer = user_df[user_df.date == current_date].groupby(['exercise'], as_index=False).reps.sum()
-                #daily_exer = user_df.groupby(['exercise'], as_index=False).reps.sum()
-                daily_exer['target'] = [home_exercises[record[0]] for record in daily_exer.values]
-                daily_exer['progress'] = daily_exer.reps/daily_exer.target
-                daily_exer['progress_adjust'] = [1 if n >= 1 else n for n in daily_exer.progress]
-                daily_exer['marker_color'] = ['palegoldenrod' if n == 1 else 'mediumpurple' for n in daily_exer.progress_adjust]
-                daily_exer['textfont_color'] = ['black' if n == 1 else 'white' for n in daily_exer.progress_adjust]
-                daily_exer.sort_values(by=['progress_adjust'], ascending=False, inplace=True)
-
-                overall_exer = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
-                overall_exer.sort_values(by=['date','reps'], inplace=True)
+        user_temp = home_fitness[home_fitness.user_id == user_id]
+        user_df = pd.merge(user_temp, profile, on=['user_id','user_id'])
+        home_exercises = user_df.home_exercises.iloc[0]
+        current_time = datetime.now() - timedelta(hours=5)
+        current_date = str(current_time.date())
                 
-                fig1 = go.Figure()
-                fig1.update_layout(
-                        title=f'Daily Home Fitness Status Update',
-                        xaxis_title='Repetition Progress',
-                        yaxis_title='Home Exercises',
-                        xaxis_range=[0,1],
-                        barmode='overlay',
-                        legend={'font':{'size':12}},
-                        showlegend=False
-                )
+        fitness_targets = pd.DataFrame()
+        fitness_targets['exercise'] = [exer for exer in home_exercises]
+        fitness_targets['target'] = [home_exercises[exer] for exer in home_exercises]
 
+        daily_exer = user_df[user_df.date == current_date].groupby(['exercise'], as_index=False).reps.sum()
+        #daily_exer = user_df.groupby(['exercise'], as_index=False).reps.sum()
+        daily_exer['target'] = [home_exercises[record[0]] for record in daily_exer.values]
+        daily_exer['progress'] = daily_exer.reps/daily_exer.target
+        daily_exer['progress_adjust'] = [1 if n >= 1 else n for n in daily_exer.progress]
+        daily_exer['marker_color'] = ['palegoldenrod' if n == 1 else 'mediumpurple' for n in daily_exer.progress_adjust]
+        daily_exer['textfont_color'] = ['black' if n == 1 else 'white' for n in daily_exer.progress_adjust]
+        daily_exer.sort_values(by=['progress_adjust'], inplace=True)
+
+        overall_exer = user_df.groupby(['date','exercise'], as_index=False).reps.sum()
+        overall_exer.sort_values(by=['date','reps'], inplace=True)
+        
+        fig1 = go.Figure()
+        fig1.update_layout(
+                title=f'Daily Home Fitness Status Update',
+                xaxis_title='Repetition Progress',
+                yaxis_title='Home Exercises',
+                xaxis_range=[0,1],
+                barmode='overlay',
+                legend={'font':{'size':12}},
+                showlegend=False
+        )
+
+        if len(daily_exer) == 0:
                 y = fitness_targets.exercise
                 text = fitness_targets.target
+        else:
+                for n in fitness_targets.exercise.values.tolist():
+                        if n not in daily_exer.exercise.values:
+                                s = {'exercise':n,
+                                'reps':0,
+                                'target':home_exercises[n],
+                                'progress':None,
+                                'progress_adjust':None,
+                                'marker_color':'mediumpurple',
+                                'textfont_color':'black'}
+                                daily_exer = daily_exer.append(s, ignore_index=True)
+                y = daily_exer.exercise
+                text = daily_exer.target
 
-                fig1.add_trace(go.Bar(
-                        x=[1]*len(y),
-                        y=y,
-                        name='Target',
-                        text=text,
-                        orientation='h',
-                        marker_color='seashell',
-                        marker_line_color='gray',
-                        opacity=0.4,
-                        marker_line_width=1,
-                        textfont_color='black'
+        fig1.add_trace(go.Bar(
+                x=[1]*len(y),
+                y=y,
+                name='Target',
+                text=text,
+                orientation='h',
+                marker_color='seashell',
+                marker_line_color='gray',
+                opacity=0.4,
+                marker_line_width=1,
+                textfont_color='black'
+        ))
+
+        marker_color=daily_exer.marker_color.values.tolist()
+        textfont_color=daily_exer.textfont_color.values.tolist()
+        
+        fig1.add_trace(go.Bar(
+                x=daily_exer.progress_adjust,
+                y=daily_exer.exercise,
+                name='Repetitions In',
+                text=daily_exer.reps,
+                orientation='h',
+                marker_color=marker_color,
+                textfont_color=textfont_color
+        ))
+        
+        fig2 = go.Figure()
+        fig2.update_layout(
+                title=f'Overall Home Fitness Summary',
+                xaxis_title='Timeline',
+                yaxis_title='Repetitions In ',
+                yaxis_range=[overall_exer.reps.min()*0.5,overall_exer.reps.max()+2],
+                legend={'font':{'size':11}},
+                showlegend=True
+        )
+        color_palette = ['peachpuff','palegreen','mistyrose','lightcoral','cornflowerblue']
+        idx = 0
+        for exer in home_exercises:
+                fig2.add_trace(go.Scatter(
+                        x=overall_exer[overall_exer.exercise == exer]['date'],
+                        y=overall_exer[overall_exer.exercise == exer]['reps'],
+                        name=exer,
+                        marker={'color':color_palette[idx],'size':9,
+                        'line':{'color':'dimgray','width':1},
+                        'symbol':'hexagon'},
+                        line={'dash':'dot'}
                 ))
+                idx += 1
 
-                marker_color=daily_exer.marker_color.values.tolist()
-                textfont_color=daily_exer.textfont_color.values.tolist()
-                
-                fig1.add_trace(go.Bar(
-                        x=daily_exer.progress_adjust,
-                        y=daily_exer.exercise,
-                        name='Repetitions In',
-                        text=daily_exer.reps,
-                        orientation='h',
-                        marker_color=marker_color,
-                        textfont_color=textfont_color
-                ))
-                
-                fig2 = go.Figure()
-                fig2.update_layout(
-                        title=f'Overall Home Fitness Summary',
-                        xaxis_title='Timeline',
-                        yaxis_title='Repetitions In ',
-                        yaxis_range=[overall_exer.reps.min()*0.5,overall_exer.reps.max()+2],
-                        legend={'font':{'size':11}},
-                        showlegend=True
-                )
-                color_palette = ['peachpuff','palegreen','mistyrose','lightcoral','cornflowerblue']
-                idx = 0
-                for exer in home_exercises:
-                        fig2.add_trace(go.Scatter(
-                                x=overall_exer[overall_exer.exercise == exer]['date'],
-                                y=overall_exer[overall_exer.exercise == exer]['reps'],
-                                name=exer,
-                                marker={'color':color_palette[idx],'size':9,
-                                'line':{'color':'dimgray','width':1},
-                                'symbol':'hexagon'},
-                                line={'dash':'dot'}
-                        ))
-                        idx += 1
-
-                tab.plotly_chart(fig1)
-                tab.plotly_chart(fig2)
-                #tab.table(user_df.tail(2))
-                #tab.table(daily_exer.tail(5))
-                #tab.table(overall_exer.tail(5))
-
-                return daily_exer
+        tab.plotly_chart(fig1)
+        tab.plotly_chart(fig2)
+        #tab.table(user_df.tail(2))
+        tab.table(daily_exer)
                         # home fitness notes
                         #
                         # ADJUST COLORS AND SCALE PROGRESS TO GOAL AS 100%
@@ -352,8 +362,8 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                         # UPDATE LEGEND
                         # ADD GRAPH FOR OVERALL PROGRESS FOR EACH EXERCISE (COMBINED LINE GRAPH TIMELINE)
                         #
-        except:
-                tab.warning('Not Available')
+        '''except:
+                tab.warning('Not Available')'''
 
 # visualize personalized running performance
 def running_performance(tab, running, profile, user_id):
