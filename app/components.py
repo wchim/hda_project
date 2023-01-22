@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime, timedelta
+import random
 
 import connect
 import utils
@@ -17,16 +18,11 @@ def overall_weight_progression():
 
 # retrieve user and user id based on profile selected
 def get_user(profile):
-        user = st.selectbox('Profile',
-                        ['Select Profile',
-                        'Wayne Chim',
-                        'Joyce Chan',
-                        'Vincent Lee',
-                        'Suk Chim',
-                        'Hing Chim',
-                        'Ernest Chim',
-                        'Haoxiang Chen'])
-        if user == 'Select Profile':
+        user_list = profile.user.values.tolist()
+        no_user = 'Select Profile'
+        user_list.insert(0, no_user)
+        user = st.selectbox('Profile', user_list)
+        if user == no_user:
                 user_id = '000'
         else:
                 user_id = profile[profile.user == user].user_id.iloc[0]
@@ -315,6 +311,9 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                 textfont_color='black'
         ))
 
+        fig1.update_layout(
+                yaxis={'tickfont':{'size':10}})
+
         marker_color=daily_exer.marker_color.values.tolist()
         textfont_color=daily_exer.textfont_color.values.tolist()
         
@@ -333,21 +332,22 @@ def measure_home_fitness(tab, home_fitness, profile, user_id):
                 title=f'Overall Home Fitness Summary',
                 xaxis_title='Timeline',
                 yaxis_title='Repetitions In ',
-                yaxis_range=[overall_exer.reps.min()*0.5,overall_exer.reps.max()+2],
+                yaxis_range=[0,overall_exer.reps.max()+2],
                 legend={'font':{'size':11}},
                 showlegend=True
         )
-        color_palette = ['peachpuff','palegreen','mistyrose','lightcoral','cornflowerblue']
+        color_palette = ['goldenrod','tomato','paleturquoise','moccasin','lightsalmon','thistle','peachpuff','palegreen','lightcoral','cornflowerblue']
+        random.shuffle(color_palette)
         idx = 0
         for exer in home_exercises:
                 fig2.add_trace(go.Scatter(
                         x=overall_exer[overall_exer.exercise == exer]['date'],
                         y=overall_exer[overall_exer.exercise == exer]['reps'],
                         name=exer,
-                        marker={'color':color_palette[idx],'size':9,
+                        marker={'color':color_palette[idx],'size':7,
                         'line':{'color':'dimgray','width':1},
                         'symbol':'hexagon'},
-                        line={'dash':'dot'}
+                        line={'dash':'dot','width':1}
                 ))
                 idx += 1
 
