@@ -4,7 +4,6 @@ import pymongo
 from pymongo.server_api import ServerApi
 
 # initialize mongodb connection
-# connection_url = "mongodb+srv://wchim:aUkvGgAarVb8Gv3P@hda-cluster.qtfcgsu.mongodb.net/bodyweight"
 @st.experimental_singleton
 def init_connection():
     MONGO_USER = st.secrets['mongo'].username
